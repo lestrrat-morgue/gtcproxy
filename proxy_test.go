@@ -13,7 +13,6 @@ func TestProxy(t *testing.T) {
 	done := make(chan struct{})
 
 	go func() {
-		println("Server starting")
 		server, err := net.Listen("tcp", ":8080")
 		if err != nil {
 			t.Errorf("Failed to listen: %s", err)
@@ -74,13 +73,13 @@ func TestProxy(t *testing.T) {
 	appAddr := "127.0.0.1:8080"
 	proxyAddr := "127.0.0.1:8888"
 
+	quit := make(chan struct{})
 	p := NewProxy(proxyAddr, appAddr)
-	go p.Run()
+	go p.Run(quit)
 
 	p.WaitReady()
 
 	//	<-proxyReady
-	println("Ready now")
 	conn, err := net.Dial("tcp", "127.0.0.1:8888")
 	if err != nil {
 		t.Errorf("Failed to connect to server: %s", err)
