@@ -9,6 +9,13 @@ Currently this is just "an exercise". If you want to use it for
 something real, you might want to first drop me a line so
 I take the time and care to harden the program!
 
+## HOMEBREW
+
+```
+brew tap lestrrat/gtcproxy
+brew install gtcproxy
+```
+
 ## BINARY BUILDS (RECOMMENDED)
 
 See the [releases page](https://github.com/lestrrat/gtcproxy/releases)
