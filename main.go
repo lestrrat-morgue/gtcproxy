@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"os/signal"
 	"sync"
@@ -17,16 +18,18 @@ func _main() int {
 
 	wg := &sync.WaitGroup{}
 	for _, pat := range os.Args[1:] {
-		r, err := parseRule(pat)
+		p, err := parseRule(pat)
 		if err != nil {
+			fmt.Fprintf(os.Stderr, "bad rule: %s", err)
 			return 1
 		}
 
-		p := NewProxy(r.src, r.dst)
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			p.Run(quit)
+			if err := p.Run(quit); err != nil {
+				fmt.Printf("Failed to run proxy: %s\n", err)
+			}
 		}()
 	}
 

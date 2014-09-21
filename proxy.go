@@ -38,7 +38,7 @@ type proxy struct {
 }
 
 func NewProxy(bindAddr, fwdAddr string) *proxy {
-	return &proxy{bindAddr, fwdAddr, make(chan struct{}), &sync.RWMutex{}, true}
+	return &proxy{bindAddr, fwdAddr, make(chan struct{}, 1), &sync.RWMutex{}, true}
 }
 
 func (p *proxy) WaitReady() {
@@ -46,6 +46,9 @@ func (p *proxy) WaitReady() {
 }
 
 func (p *proxy) Run(quit <-chan struct{}) error {
+//	fmt.Printf("Listening on '%s'\n", p.bindAddr)
+//	fmt.Printf("Will forward anything to '%s'\n", p.fwdAddr)
+
 	server, err := net.Listen("tcp", p.bindAddr)
 	if err != nil {
 		p.ready <- struct{}{}
@@ -62,6 +65,7 @@ func (p *proxy) Run(quit <-chan struct{}) error {
 		for p.running() {
 			conn, err := server.Accept()
 			if err != nil {
+				fmt.Printf("Accept failed: %s\n", err)
 				continue
 			}
 			acceptCh<-conn
@@ -98,6 +102,7 @@ func (p *proxy) stop() {
 func (p *proxy) processConn(conn net.Conn) {
 	endpoint, err := net.Dial("tcp", p.fwdAddr)
 	if err != nil {
+		fmt.Printf("Failed to connect to '%s': %s\n", p.fwdAddr, err)
 		return
 	}
 	go proxyConn(endpoint.(CloseWriter), conn.(CloseReader))
